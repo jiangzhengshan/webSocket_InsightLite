@@ -2,22 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>发消息</title>
     <script src="/webjars/jquery/jquery.min.js"></script>
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 </head>
 <body>
 <div id="chat"></div>
-<div>
-    <label for="username">请输入目标用户名：</label>
-    <input type="text" id="username" placeholder="用户名">
-    <label for="content">请输入聊天内容</label>
-    <input type="text" id="content" placeholder="聊天内容">
-</div>
+    <div>
+        <label for="username">请输入目标用户名：</label>
+        <input type="text" id="username" placeholder="用户名">
+        <label for="content">请输入聊天内容</label>
+        <input type="text" id="content" placeholder="聊天内容">
+    </div>
 <input value="发送" type="button" id="send"></input>
-
-
 <script>
     var stompClient;
     $(function () {

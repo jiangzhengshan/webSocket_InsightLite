@@ -2,58 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>通信检查</title>
-<!--    <script src="/webjars/jquery/jquery.min.js"></script>-->
-<!--    <script src="/webjars/sockjs-client/sockjs.min.js"></script>-->
-<!--    <script src="/webjars/stomp-websocket/stomp.min.js"></script>-->
-    <script src="js/jquery.js"></script>
-    <script src="js/Insight_Lite.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/Insight_Lite.css"/>
+    <title>发消息</title>
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 </head>
 <body>
-<div class="device_size">
-    <div class="device_visual_size">
-        <canvas width="100" height="100" id="canvas"></canvas>
+<div id="chat"></div>
+    <div>
+        <label for="username">请输入目标用户名：</label>
+        <input type="text" id="username" placeholder="用户名">
+        <label for="content">请输入聊天内容</label>
+        <input type="text" id="content" placeholder="聊天内容">
     </div>
-</div>
-
-
-<!--<div id="chat"></div>-->
-<!--<div>-->
-<!--    <label for="username">请输入目标用户名：</label>-->
-<!--    <input type="text" id="username" placeholder="用户名">-->
-<!--    <label for="content">请输入聊天内容</label>-->
-<!--    <input type="text" id="content" placeholder="聊天内容">-->
-<!--</div>-->
-<!--<input value="发送" type="button" id="send"></input>-->
-
-
+<input value="发送" type="button" id="send"></input>
 <script>
-    // var stompClient;
-    // $(function () {
-    //     var canvas = $("#canvas");
-    //     var c = canvas.getContext('2d');
-    //     c.fillStyle = "red";
-    //     c.fillRect(100,100,100,100);
-    //     // connect();
-    //     // $("#send").click(function () {
-    //     //     stompClient.send("/online_chat", {}, JSON.stringify({
-    //     //         'to': $("#username").val(),
-    //     //         'content': $("#content").val()
-    //     //     }))
-    //     // })
-    // })
-    //
-    // function connect() {
-    //     var socketjs = new SockJS("/chat");
-    //     stompClient = Stomp.over(socketjs);
-    //     stompClient.connect({}, function (frame) {
-    //         stompClient.subscribe("/user/queue/chat", function (greeting) {
-    //             var msgContent = JSON.parse(greeting.body);
-    //             $("#chat").append("<div>" + msgContent.from + ":" + msgContent.content + "</div>");
-    //         });
-    //     })
-    // }
+    var stompClient;
+    $(function () {
+        connect();
+        $("#send").click(function () {
+            stompClient.send("/online_chat", {}, JSON.stringify({
+                'to': $("#username").val(),
+                'content': $("#content").val()
+            }))
+        })
+    })
+
+    function connect() {
+        var socketjs = new SockJS("/chat");
+        stompClient = Stomp.over(socketjs);
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe("/user/queue/chat", function (greeting) {
+                var msgContent = JSON.parse(greeting.body);
+                $("#chat").append("<div>" + msgContent.from + ":" + msgContent.content + "</div>");
+            });
+        })
+    }
 </script>
 </body>
 </html>
