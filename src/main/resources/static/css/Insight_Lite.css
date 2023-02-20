@@ -1,0 +1,55 @@
+.device_size {
+    width: 295px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border:2px dashed #999999;
+    border-radius: 20px;
+    margin: auto;
+    background:#FFFFFF
+}
+
+.device_visual_size {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.drawCanvas {
+    width: 0px;
+    height: 0px;
+}
+
+.draw_dot {
+    margin-top: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 50%;
+    background-color: #00C1EC;
+}
+
+.gestureZone {
+    width: 92%;
+    height: 500px;
+    background-color: rgba(0, 187, 255, 0.06);
+    border-radius: 15px 15px 0px 0px;
+    margin-top: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 1058;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.tips {
+    font-size: 16px;
+    line-height: 180%;
+    color: #000000;
+    position: absolute;
+    z-index: 1024;
+    top: 20px;
+}
