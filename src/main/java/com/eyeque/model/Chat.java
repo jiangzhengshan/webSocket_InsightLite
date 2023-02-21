@@ -1,4 +1,4 @@
-package org.javaboy.chat01.model;
+package com.eyeque.model;
 
 /**
  * @author jiangzhengshan
