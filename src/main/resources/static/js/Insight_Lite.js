@@ -1,4 +1,3 @@
-var stompClient;
 var displayLength = [2, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8];
 var marginArr = [9, 11, 15, 10, 10, 6, 6, 5, 5, 4, 3];
 var dotSizeArr = [10, 10, 9, 8, 8, 7, 7, 6, 6, 5, 5];
@@ -8,35 +7,60 @@ var displayArray = [];
 var arr_four = [];
 var canvasList= [];
 var ratio = window.devicePixelRatio;
-var audio = new Audio();
-var dotSize = 0
+var start_audio = new Audio('audio/start.mp3');
+var audio = new Audio('audio/ding.mp3');
+var wrongCount = 0
+var basicVisualValueArr = ['4.0', '4.1', '4.2', '4.3', '4.4', '4.5', '4.6', '4.7', '4.8', '4.9', '5.0'];
+var userInput = [];
+var userDirection = 0;
+var swipeCount = 0;
+var incorrect = 0;
+var eyeCheck = 0
+var ppi = 500
+var basicInchArr = [0.361 / 25.4, 0.451 / 25.4, 0.577 / 25.4, 0.722 / 25.4, 0.902 / 25.4, 1.137 / 25.4, 1.444 / 25.4, 1.805 / 25.4, 2.256 / 25.4, 2.888 / 25.4, 3.61 / 25.4]
+basicInchArr = basicInchArr.reverse()
+basicInchArr.forEach(element => {
+    basicImageWidth.push(element * ppi)
+    // basicDiagonalWidth.push(this.calculatedDiagonal(element * ppi))
+});
 $(function () {
-    var ppi = 401
-    var basicInchArr = [0.361 / 25.4, 0.451 / 25.4, 0.577 / 25.4, 0.722 / 25.4, 0.902 / 25.4, 1.137 / 25.4, 1.444 / 25.4, 1.805 / 25.4, 2.256 / 25.4, 2.888 / 25.4, 3.61 / 25.4]
-    basicInchArr = basicInchArr.reverse()
-    basicInchArr.forEach(element => {
-        basicImageWidth.push(element * ppi)
-        // basicDiagonalWidth.push(this.calculatedDiagonal(element * ppi))
-    });
-    // audio.src = "audio/Let's start.mp3";
+    $(".check_eye").append("<h3>右眼检查</h3>")
     drawDiagram();
 })
 
-function drawDiagram() {
-    getRandomDirection();
-    removeDraw();
-    changeDotPos();
-    for (var d = 0; d < displayLength[nextLevel]; d++) {
-        canvasFont(d, basicImageWidth[nextLevel])
-    }
+function init() {
+    nextLevel = 0;
+    displayArray = [];
+    arr_four = [];
+    canvasList= [];
+    wrongCount = 0
+    userInput = [];
+    userDirection = 0;
+    swipeCount = 0;
+    incorrect = 0;
+    $(".check_eye").children(0).text('左眼检查')
+    $(".canvasList").remove()
+    drawDiagram();
 }
 
-function removeDraw() {
+function drawDiagram() {
+    getRandomDirection();
     canvasList = [];
+
+    for (var d = 0; d < displayLength[nextLevel]; d++) {
+        canvasFont(displayArray[d], basicImageWidth[nextLevel])
+    }
+    changeDotPos();
 }
 
 function changeDotPos() {
-    dotSize = dotSizeArr[nextLevel];
+
+    for (var i = 0; i< $(".draw_dot").length; i++)
+        if (i == swipeCount) {
+            $(".draw_dot")[i].style.opacity = 1
+        } else {
+            $(".draw_dot")[i].style.opacity = 0
+        }
 }
 
 function getRandomDirection() {
@@ -85,11 +109,10 @@ function canvasFont(direction, Physics_pixel_size) {
         fontSizeWidth: canvasWidth,
         fontSizeHeight: canvasHeight,
         enlargeDiagnoal: enlargeDiagnoal,
-        canvasId: 'canvas' + new Date().getTime(),
+        canvasId: 'canvas' + canvasList.length,
         margin: marginArr[nextLevel]
     }
     canvasList.push(canvas_size)
-    // console.log(canvasList)
     drawCanvas(canvasList.length - 1)
 }
 
@@ -100,8 +123,9 @@ function drawCanvas(index) {
     var enlargeDiagnoal = graph.enlargeDiagnoal
     var canvasWidth = graph.fontSizeWidth
     var canvasHeight = graph.fontSizeHeight
-    //
+
     var div = document.createElement('div');
+    div.className = "canvasList"
     $(".device_visual_size").append(div)
     var canvas = document.createElement('canvas');
     canvas.id = canvasId
@@ -110,12 +134,13 @@ function drawCanvas(index) {
     canvas.style.marginLeft = graph.margin + "px"
     canvas.style.marginRight = graph.margin + "px"
     div.append(canvas)
-    // 创建点
     var drawDot = document.createElement('div');
     drawDot.className = "draw_dot"
-    drawDot.style.width = dotSize + "px"
-    drawDot.style.height = dotSize + "px"
+    drawDot.style.width = dotSizeArr[nextLevel] + "px"
+    drawDot.style.height = dotSizeArr[nextLevel] + "px"
+    // drawDot.style.opacity = canvasList.length == 1 ? 1 : 0;
     div.append(drawDot)
+
     var theCanvas = document.getElementById(canvasId);
     var context = theCanvas.getContext("2d");
     context.clearRect(0, 0, enlargeDiagnoal, enlargeDiagnoal)
@@ -146,15 +171,87 @@ function drawCanvas(index) {
     }
 }
 
-
-
-function connect() {
-    var socketjs = new SockJS("/chat");
-    stompClient = Stomp.over(socketjs);
-    stompClient.connect({}, function (frame) {
-        stompClient.subscribe("/user/queue/chat", function (greeting) {
-            var msgContent = JSON.parse(greeting.body);
-            $("#chat").append("<div>" + msgContent.from + ":" + msgContent.content + "</div>");
-        });
-    })
+function click1(val) {
+    // audio.play()
+    audio.volume = 1;
+    audio.loop = false;
+    userDirection = val
+    userInput.push(userDirection)
+    swipeCount++
+    changeDotPos();
+    verifyLevel()
 }
+function click2(val) {
+    // audio.play()
+    userDirection = val
+    userInput.push(userDirection)
+    swipeCount++
+    changeDotPos();
+    verifyLevel()
+}
+function click3(val) {
+    // audio.play()
+    userDirection = val
+    userInput.push(userDirection)
+    swipeCount++
+    changeDotPos();
+    verifyLevel()
+}
+function click4(val) {
+    // audio.play()
+    userDirection = val
+    userInput.push(userDirection)
+    swipeCount++
+    changeDotPos();
+    verifyLevel()
+}
+
+function verifyLevel() {
+    if (swipeCount == displayLength[nextLevel]) {
+        console.log(userInput)
+        console.log(displayArray)
+        for (var i = 0; i < userInput.length; i++) {
+            if (userInput[i] !== displayArray[i]) incorrect++;
+        }
+        wrongCount = wrongCount + incorrect
+        console.log('错误次数' + wrongCount)
+        if (nextLevel == 10 && displayLength[nextLevel] / 2 > incorrect) {
+            this.finalResult(nextLevel)
+        } else if (displayLength[nextLevel] / 2 <= incorrect) {
+            nextLevel = nextLevel == 0 ? nextLevel : nextLevel - 1
+            this.finalResult(nextLevel)
+        } else {
+            nextLevel += 1;
+            userInput = [];
+            incorrect = 0;
+            swipeCount = 0;
+            displayArray = [];
+            $(".canvasList").remove()
+            this.drawDiagram();
+        }
+    }
+}
+
+function finalResult(finalPassedLevel) {
+    var vaResult = basicVisualValueArr[finalPassedLevel]
+    var decimalScore = (nextLevel / 10) - (0.02 * wrongCount)
+    decimalScore = decimalScore < 0 ? -decimalScore : decimalScore
+    var vaScore = parseInt(decimalScore * 100) // 做成百分制
+    if (eyeCheck == 0) {
+        localStorage.vaOD = vaResult
+        // localStorage.vaODScore = vaScore
+        eyeCheck = 1
+        init()
+    } else {
+        localStorage.vaOS = vaResult
+        $(".canvasList").remove()
+        var h3 = document.createElement('h1');
+        h3.className = "test_over"
+        h3.innerText = "检查结束"
+        $(".device_visual_size").append(h3)
+        $(".vaOD").children(0).text("右眼视力:"+localStorage.vaOD)
+        $(".vaOS").children(0).text("右眼视力:"+localStorage.vaOS)
+    }
+}
+
+

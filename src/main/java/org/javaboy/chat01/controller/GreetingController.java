@@ -20,7 +20,6 @@ public class GreetingController {
     SimpMessagingTemplate simpMessagingTemplate;
 
     @MessageMapping("/hello")
-//    @SendTo("/topic/greetings")
     public Message greeting(Message message) {
         System.out.println("message = " + message);
         simpMessagingTemplate.convertAndSend("/topic/greetings", message);
