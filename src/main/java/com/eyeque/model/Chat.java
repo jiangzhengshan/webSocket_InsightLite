@@ -3,32 +3,41 @@ package com.eyeque.model;
 /**
  * @author jiangzhengshan
  */
-public class Chat {
-    private String to;
-    private String from;
-    private String content;
+public class Chat<T> {
+    private Long to;
+    private Long from;
+    private Long conversationId;
+    private T content;
 
-    public String getTo() {
+    public Long getTo() {
         return to;
     }
 
-    public void setTo(String to) {
+    public void setTo(Long to) {
         this.to = to;
     }
 
-    public String getFrom() {
+    public Long getFrom() {
         return from;
     }
 
-    public void setFrom(String from) {
+    public void setFrom(Long from) {
         this.from = from;
     }
 
-    public String getContent() {
+    public T getContent() {
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(T content) {
         this.content = content;
+    }
+
+    public Long getConversationId() {
+        return conversationId;
+    }
+
+    public void setConversationId(Long conversationId) {
+        this.conversationId = conversationId;
     }
 }
