@@ -1,17 +1,18 @@
 package com.eyeque.controller;
 
+import com.eyeque.Constant;
 import com.eyeque.model.Conversation;
 import com.eyeque.model.Message;
 import com.eyeque.model.MessageType;
 import com.eyeque.service.MessageHandler;
 import com.eyeque.utils.SnowFlakeUtil;
 import com.eyeque.utils.SpringCtxUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Map;
 
 @Component
 @ServerEndpoint("/websocket")
@@ -40,7 +41,7 @@ public class WebsocketServer {
             messageHandler.saveSocket(this.userId, this);
         } catch (Exception e) {
             try {
-                session.getBasicRemote().sendObject(messageHandler.createErrorMessage(e.getMessage()));
+                session.getBasicRemote().sendObject(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -80,20 +81,40 @@ public class WebsocketServer {
                     break;
                 case MSG_PAIR_CONVERSION:
                     //send left
+                    Map<String, Long> body = (Map<String, Long>) messageResult.getBody();
+                    Long conversationId = body.get("conversationId");
+                    Long memberLeft = body.get("memberLeft");
+                    if (conversationId == null || conversationId == 0) {
+                        sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
+                        return;
+                    }
+                    //send msg
+                    messageHandler.getSocket(memberLeft).sendMessage(messageHandler.createCommonMessage(MessageType.MSG_PAIR_SUCCESS));
 
                     //response right
-                    sendMessage(messageHandler.createResponseMessage());
+                    sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK));
+
+                    //update conversation
+                    messageHandler.getConversation(conversationId).setMemberRight(this.userId);
                     break;
                 case MSG_MESSAGE:
-                    break;
-                case MSG_ERROR_RESPONSE:
+                    Long leftId = messageHandler.queryLeftUserId(this.userId);
+                    if (leftId == null || leftId == 0) {
+                        sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
+                        return;
+                    }
+
+                    messageHandler.getSocket(leftId).sendMessage(message);
+
+                    //response right
+                    sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK));
                     break;
                 case MES_UNKNOWN:
                     break;
             }
         } catch (Exception e) {
             try {
-                session.getBasicRemote().sendObject(messageHandler.createErrorMessage(e.getMessage()));
+                session.getBasicRemote().sendObject(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

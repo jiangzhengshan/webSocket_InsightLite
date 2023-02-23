@@ -38,16 +38,9 @@ public class MessageHandler {
         return conversation;
     }
 
-    public Message createErrorMessage(String content) {
+    public Message createCommonMessage(MessageType messageType) {
         Message message = new Message<String>();
-        message.setMessageId(MessageType.MSG_ERROR_RESPONSE.getId().longValue());
-        message.setBody(content);
-        return message;
-    }
-
-    public Message createResponseMessage(){
-        Message message = new Message<String>();
-        message.setMessageId(MessageType.MSG_RESPONSE_OK.getId().longValue());
+        message.setMessageId(messageType.getId().longValue());
         return message;
     }
 
@@ -57,6 +50,10 @@ public class MessageHandler {
 
     public String encodeMessage(Object message) throws JsonProcessingException {
         return objectMapper.writeValueAsString(message);
+    }
+
+    public Conversation convertConversation(String message) throws JsonProcessingException {
+        return objectMapper.readValue(message, Conversation.class);
     }
 
     public Message sendUserId(long userId) {
@@ -69,7 +66,11 @@ public class MessageHandler {
         websocketServerConcurrentHashMap.put(userId, websocketServer);
     }
 
-    public void removeSocket(Long userId){
+    public WebsocketServer getSocket(Long userId) {
+        return websocketServerConcurrentHashMap.get(userId);
+    }
+
+    public void removeSocket(Long userId) {
         websocketServerConcurrentHashMap.remove(userId);
     }
 
@@ -79,12 +80,21 @@ public class MessageHandler {
     }
 
     @Nullable
-    public Conversation getConversation(Long conversationId){
+    public Conversation getConversation(Long conversationId) {
         int index = conversationList.indexOf(new Conversation(conversationId));
         return conversationList.get(index);
     }
 
-    public void removeConversation(Long conversationId){
+    public Long queryLeftUserId(Long rightMember) {
+        for (Conversation conversation : conversationList) {
+            if (conversation.getMemberRight().longValue() == rightMember) {
+                return conversation.getMemberLeft();
+            }
+        }
+        return null;
+    }
+
+    public void removeConversation(Long conversationId) {
         conversationList.remove(conversationId);
     }
 
