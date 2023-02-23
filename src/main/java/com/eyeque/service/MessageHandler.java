@@ -8,12 +8,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Component
 public class MessageHandler {
@@ -21,14 +19,14 @@ public class MessageHandler {
     private static ObjectMapper objectMapper;
 
 
-    private static ArrayList<Conversation> conversationList;
+    private static List<Conversation> conversationList;
     //key user id
     private static ConcurrentHashMap<Long, WebsocketServer> websocketServerConcurrentHashMap;
 
     @PostConstruct
     public void init() {
         objectMapper = new ObjectMapper();
-        conversationList = (ArrayList<Conversation>) Collections.synchronizedList(new ArrayList<Conversation>());
+        conversationList = Collections.synchronizedList(new ArrayList<Conversation>());
         websocketServerConcurrentHashMap = new ConcurrentHashMap();
     }
 
