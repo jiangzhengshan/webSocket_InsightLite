@@ -87,6 +87,9 @@ public class MessageHandler {
 
     public Long queryLeftUserId(Long rightMember) {
         for (Conversation conversation : conversationList) {
+            if (conversation.getMemberRight() == null) {
+                continue;
+            }
             if (conversation.getMemberRight().longValue() == rightMember) {
                 return conversation.getMemberLeft();
             }
