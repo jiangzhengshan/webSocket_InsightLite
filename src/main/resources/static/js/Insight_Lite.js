@@ -16,17 +16,165 @@ var userDirection = 0;
 var swipeCount = 0;
 var incorrect = 0;
 var eyeCheck = 0
-var ppi = 500
-var basicInchArr = [0.361 / 25.4, 0.451 / 25.4, 0.577 / 25.4, 0.722 / 25.4, 0.902 / 25.4, 1.137 / 25.4, 1.444 / 25.4, 1.805 / 25.4, 2.256 / 25.4, 2.888 / 25.4, 3.61 / 25.4]
-basicInchArr = basicInchArr.reverse()
+var ppi = Math.sqrt(Math.pow(window.screen.availWidth, 2) + Math.pow(window.screen.availHeight, 2)) / 24;
+var basicInchArr = [43.6332 / 25.4, 34.47 / 25.4,  27.489 / 25.4, 21.869 / 25.4, 17.3704 / 25.4, 13.7968 / 25.4, 10.9607 / 25.4, 8.7048 / 25.4, 6.9159 / 25.4, 5.4934 / 25.4, 4.3633 / 25.4]
 basicInchArr.forEach(element => {
     basicImageWidth.push(element * ppi)
     // basicDiagonalWidth.push(this.calculatedDiagonal(element * ppi))
 });
+
+//保存webScoket的对象
+websocket = null
+//连接后端的地址(这里要替换成自己后端的连接地址)
+websocketUrl = 'ws://localhost:6657/websocket'
+//判断是否重新连接
+lockReconnect = false
+
 $(function () {
-    $(".check_eye").append("<h3>右眼检查</h3>")
-    drawDiagram();
+    var defaultLang = navigator.language;
+    if (defaultLang != "zh-CN") {
+        defaultLang = "en"
+    }
+    $("[i18n]").i18n({
+        defaultLang: defaultLang,
+        filePath: "/i18n/",
+        filePrefix: "i18n_",
+        fileSuffix: "",
+        forever: true,
+        callback: function() {
+            console.log('i18n has been completed.')
+        }
+    })
+    $(".test_eye").hide()
+    // 初始化页面先显示二维码
+    webScoketInit()
 })
+
+function webScoketInit() {
+    //判断当前浏览器是否支持WebSocket
+    if ('WebSocket' in window) {
+        if (websocket != null) {
+            websocket.close();
+            websocket = null;
+        }
+    } else {
+        alert('Not support websocket')
+    }
+    //连接后端的地址
+    websocket = new WebSocket(websocketUrl);
+
+    //连接发生错误的回调方法
+    websocket.onerror = function (event) {
+        //尝试重新连接
+        reconnect(websocketUrl);
+        console.log('连接错误')
+    };
+
+    //连接成功建立的回调方法
+    websocket.onopen = function (event) {
+        //心跳检测重置
+        // heartCheck.reset().start();
+        console.log('连接开启')
+    }
+
+    //接收到消息的回调方法
+    websocket.onmessage = function (event) {
+        //心跳检测重置
+        // heartCheck.reset().start();
+        //获取到后台发送的数据并转为json类型
+        let res = JSON.parse(event.data)
+        if (res.messageId == 65536) {
+            websocket.send(JSON.stringify({
+                "messageId": 32
+            }));
+        }
+        // 会话创建成功二维码粗处信息
+        if (res.memberLeft != undefined) {
+            console.log(event.data)
+            $(".code").qrcode({width: 300, height: 300, text: event.data});
+        }
+        // 收到匹配成功消息
+        if (res.messageId == 36) {
+            $(".code").hide()
+            $(".test_eye").show()
+            drawDiagram();
+        }
+        // 收到方向消息
+        if (res.messageId == 35) {
+            var direction = res.body
+            if (direction = 65538) {
+                direction = 1
+            } else if (direction = 65541) {
+                direction = 2
+            } else if (direction = 65539) {
+                direction = 3
+            } else {
+                direction = 4
+            }
+            userDirection = direction
+            userInput.push(userDirection)
+            swipeCount++
+            changeDotPos();
+            verifyLevel()
+        }
+    }
+
+
+    //连接关闭的回调方法
+    websocket.onclose = function (event) {
+        //尝试重新连接
+        reconnect(websocketUrl);
+        console.log('连接关闭')
+    }
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+    window.onbeforeunload = function () {
+        closeWebSocket();
+    }
+
+    //重新连接
+    function reconnect(url) {
+        if (lockReconnect) return;
+        lockReconnect = true;
+        //没连接上会一直重连，设置延迟避免请求过多
+        setTimeout(function () {
+            // that.websocket = new WebSocket(url);
+            webScoketInit();
+            lockReconnect = false;
+        }, 2000);
+    }
+
+    //心跳检测
+    // var heartCheck = {
+    //     //1分钟发一次心跳,时间设置小一点较好（50-60秒之间）
+    //     timeout: 55000,
+    //     timeoutObj: null,
+    //     serverTimeoutObj: null,
+    //     reset: function () {
+    //         clearTimeout(this.timeoutObj);
+    //         clearTimeout(this.serverTimeoutObj);
+    //         return this;
+    //     },
+    //     start: function () {
+    //         var self = this;
+    //         this.timeoutObj = setTimeout(function () {
+    //             //这里发送一个心跳，后端收到后，返回一个心跳消息，
+    //             //onmessage拿到返回的心跳就说明连接正常
+    //             websocket.send("Msg");
+    //             //如果超过一定时间还没重置，说明后端主动断开了
+    //             self.serverTimeoutObj = setTimeout(function () {
+    //                 //如果onclose会执行reconnect，我们执行socket.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次
+    //                 websocket.close();
+    //             }, self.timeout)
+    //         }, this.timeout)
+    //     }
+    // }
+
+    //关闭WebSocket连接
+    function closeWebSocket() {
+        websocket.close();
+    }
+}
 
 function init() {
     nextLevel = 0;
@@ -38,7 +186,7 @@ function init() {
     userDirection = 0;
     swipeCount = 0;
     incorrect = 0;
-    $(".check_eye").children(0).text('左眼检查')
+    $(".check_eye").children(0).text('leftEye Check')
     $(".canvasList").remove()
     drawDiagram();
 }
@@ -46,7 +194,6 @@ function init() {
 function drawDiagram() {
     getRandomDirection();
     canvasList = [];
-
     for (var d = 0; d < displayLength[nextLevel]; d++) {
         canvasFont(displayArray[d], basicImageWidth[nextLevel])
     }
@@ -181,35 +328,9 @@ function click1(val) {
     changeDotPos();
     verifyLevel()
 }
-function click2(val) {
-    // audio.play()
-    userDirection = val
-    userInput.push(userDirection)
-    swipeCount++
-    changeDotPos();
-    verifyLevel()
-}
-function click3(val) {
-    // audio.play()
-    userDirection = val
-    userInput.push(userDirection)
-    swipeCount++
-    changeDotPos();
-    verifyLevel()
-}
-function click4(val) {
-    // audio.play()
-    userDirection = val
-    userInput.push(userDirection)
-    swipeCount++
-    changeDotPos();
-    verifyLevel()
-}
 
 function verifyLevel() {
     if (swipeCount == displayLength[nextLevel]) {
-        console.log(userInput)
-        console.log(displayArray)
         for (var i = 0; i < userInput.length; i++) {
             if (userInput[i] !== displayArray[i]) incorrect++;
         }
@@ -247,11 +368,12 @@ function finalResult(finalPassedLevel) {
         $(".canvasList").remove()
         var h3 = document.createElement('h1');
         h3.className = "test_over"
-        h3.innerText = "检查结束"
+        h3.innerText = "Test Done"
         $(".device_visual_size").append(h3)
-        $(".vaOD").children(0).text("右眼视力:"+localStorage.vaOD)
-        $(".vaOS").children(0).text("右眼视力:"+localStorage.vaOS)
+        $(".vaOD").children(0).text("vaOD:"+localStorage.vaOD)
+        $(".vaOS").children(0).text("vaOS:"+localStorage.vaOS)
     }
 }
+
 
 

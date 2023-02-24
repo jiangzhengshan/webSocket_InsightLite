@@ -2,30 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>通信检查</title>
+  <title>WebSocket_Test</title>
   <script src="js/jquery.js"></script>
+  <script src="js/jquery.i18n.js"></script>
   <script src="js/Insight_Lite.js"></script>
+  <script src="js/jquery.qrcode.js"></script>
   <link rel="stylesheet" type="text/css" href="css/Insight_Lite.css"/>
 </head>
 <body>
-  <div class="check_eye"></div>
-  <div class="device_size">
-    <div class="device_visual_size">
-  </div>
-  </div>
+
   <div class="container">
-    <div onclick="click1(1)" class="click">上</div>
-    <div onclick="click2(2)" class="click">右</div>
-    <div onclick="click3(3)" class="click">下</div>
-    <div onclick="click4(4)" class="click">左</div>
-  </div>
-  <div class="test_result">
-    <div class="vaOD">
-      <h3></h3>
+    <div class="code"></div>
+    <div class="test_eye">
+      <div class="check_eye">
+        <h1 i18n="whichEyeCheck">rightEye Check</h1>
+      </div>
+      <div class="device_size">
+        <div class="device_visual_size">
+        </div>
+      </div>
+      <div class="test_result">
+        <div class="vaOD">
+          <h3></h3>
+        </div>
+        <div class="vaOS">
+          <h3></h3>
+        </div>
+      </div>
     </div>
-    <div class="vaOS">
-      <h3></h3>
-    </div>
+
   </div>
 </body>
 </html>
