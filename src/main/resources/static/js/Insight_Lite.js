@@ -16,12 +16,9 @@ var userDirection = 0;
 var swipeCount = 0;
 var incorrect = 0;
 var eyeCheck = 0
-var ppi = Math.sqrt(Math.pow(window.screen.availWidth, 2) + Math.pow(window.screen.availHeight, 2)) / 24;
+var ppi = 0;
 var basicInchArr = [43.6332 / 25.4, 34.47 / 25.4,  27.489 / 25.4, 21.869 / 25.4, 17.3704 / 25.4, 13.7968 / 25.4, 10.9607 / 25.4, 8.7048 / 25.4, 6.9159 / 25.4, 5.4934 / 25.4, 4.3633 / 25.4]
-basicInchArr.forEach(element => {
-    basicImageWidth.push(element * ppi)
-    // basicDiagonalWidth.push(this.calculatedDiagonal(element * ppi))
-});
+
 
 //保存webScoket的对象
 websocket = null
@@ -31,6 +28,12 @@ websocketUrl = 'ws://localhost:6657/websocket'
 lockReconnect = false
 
 $(function () {
+    var inch = Math.sqrt(Math.pow(window.screen.width / $("#dpi").width(), 2) + Math.pow(window.screen.height / $("#dpi").height(), 2));
+    ppi = Math.sqrt(Math.pow(window.screen.availWidth, 2) + Math.pow(window.screen.availHeight, 2)) / inch;
+    basicInchArr.forEach(element => {
+        basicImageWidth.push(element * ppi)
+        // basicDiagonalWidth.push(this.calculatedDiagonal(element * ppi))
+    });
     var defaultLang = navigator.language;
     if (defaultLang != "zh-CN") {
         defaultLang = "en"
@@ -45,6 +48,7 @@ $(function () {
             console.log('i18n has been completed.')
         }
     })
+    // drawDiagram()
     $(".test_eye").hide()
     // 初始化页面先显示二维码
     webScoketInit()
