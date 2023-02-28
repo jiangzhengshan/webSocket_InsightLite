@@ -1,12 +1,12 @@
 var displayLength = [2, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8];
 var marginArr = [9, 11, 15, 10, 10, 6, 6, 5, 5, 4, 3];
-var dotSizeArr = [10, 10, 9, 8, 8, 7, 7, 6, 6, 5, 5];
+var dotSizeArr = [15, 15, 14, 13, 13, 12, 12, 11, 11, 10, 10];
 var basicImageWidth = [];
 var nextLevel = 0;
 var displayArray = [];
 var arr_four = [];
 var canvasList= [];
-var ratio = window.devicePixelRatio;
+// var ratio = window.devicePixelRatio;
 var start_audio = new Audio('audio/start.mp3');
 var audio = new Audio('audio/ding.mp3');
 var wrongCount = 0
@@ -18,7 +18,6 @@ var incorrect = 0;
 var eyeCheck = 0
 var ppi = 0;
 var basicInchArr = [43.6332 / 25.4, 34.47 / 25.4,  27.489 / 25.4, 21.869 / 25.4, 17.3704 / 25.4, 13.7968 / 25.4, 10.9607 / 25.4, 8.7048 / 25.4, 6.9159 / 25.4, 5.4934 / 25.4, 4.3633 / 25.4]
-
 
 //保存webScoket的对象
 websocket = null
@@ -252,8 +251,8 @@ function getRandom() {
 }
 
 function canvasFont(direction, Physics_pixel_size) {
-    var canvasHeight = Physics_pixel_size / ratio
-    var canvasWidth = Physics_pixel_size / ratio
+    var canvasHeight = Physics_pixel_size
+    var canvasWidth = Physics_pixel_size
     var enlargeDiagnoal = basicImageWidth[nextLevel]
     var canvas_size = {
         direction: direction,
