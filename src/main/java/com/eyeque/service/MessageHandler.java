@@ -4,6 +4,7 @@ import com.eyeque.controller.WebsocketServer;
 import com.eyeque.model.Conversation;
 import com.eyeque.model.Message;
 import com.eyeque.model.MessageType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.lang.Nullable;
@@ -26,6 +27,7 @@ public class MessageHandler {
     @PostConstruct
     public void init() {
         objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         conversationList = Collections.synchronizedList(new ArrayList<Conversation>());
         websocketServerConcurrentHashMap = new ConcurrentHashMap();
     }
@@ -38,9 +40,10 @@ public class MessageHandler {
         return conversation;
     }
 
-    public Message createCommonMessage(MessageType messageType) {
+    public Message createCommonMessage(MessageType messageType, long userId) {
         Message message = new Message<String>();
         message.setMessageId(messageType.getId().longValue());
+        message.setBody(userId);
         return message;
     }
 
@@ -92,6 +95,18 @@ public class MessageHandler {
             }
             if (conversation.getMemberRight().longValue() == rightMember) {
                 return conversation.getMemberLeft();
+            }
+        }
+        return null;
+    }
+
+    public Long queryRightUserId(Long leftMember) {
+        for (Conversation conversation : conversationList) {
+            if (conversation.getMemberRight() == null) {
+                continue;
+            }
+            if (conversation.getMemberLeft().longValue() == leftMember) {
+                return conversation.getMemberRight();
             }
         }
         return null;

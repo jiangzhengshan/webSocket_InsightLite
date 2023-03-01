@@ -41,7 +41,7 @@ public class WebsocketServer {
             messageHandler.saveSocket(this.userId, this);
         } catch (Exception e) {
             try {
-                session.getBasicRemote().sendObject(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
+                session.getBasicRemote().sendObject(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE,this.userId));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -67,6 +67,10 @@ public class WebsocketServer {
     @OnMessage
     public void onMessage(String message, Session session) {
         try {
+            if (message.isEmpty() || message.length() < 5) {
+                //sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK,this.userId));
+                return;
+            }
             Message messageResult = messageHandler.convertMessage(message);
             MessageType messageType = MessageType.transfer(messageResult.getMessageId().intValue());
             switch (messageType) {
@@ -85,14 +89,14 @@ public class WebsocketServer {
                     Long conversationId = body.get("conversationId");
                     Long memberLeft = body.get("memberLeft");
                     if (conversationId == null || conversationId == 0) {
-                        sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
+                        sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE,this.userId));
                         return;
                     }
                     //send msg
-                    messageHandler.getSocket(memberLeft).sendMessage(messageHandler.createCommonMessage(MessageType.MSG_PAIR_SUCCESS));
+                    messageHandler.getSocket(memberLeft).sendMessage(messageHandler.createCommonMessage(MessageType.MSG_PAIR_SUCCESS,this.userId));
 
                     //response right
-                    sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK));
+                    sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK,this.userId));
 
                     //update conversation
                     messageHandler.getConversation(conversationId).setMemberRight(this.userId);
@@ -100,24 +104,30 @@ public class WebsocketServer {
                 case MSG_MESSAGE:
                     Long leftId = messageHandler.queryLeftUserId(this.userId);
                     if (leftId == null || leftId == 0) {
-                        sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
+                        sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE,this.userId));
                         return;
                     }
 
                     messageHandler.getSocket(leftId).sendMessage(message);
 
                     //response right
-                    sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK));
+                    sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK,this.userId));
                     break;
                 case MSG_TESTDOWN:
-                    System.out.println("检查结束");
+                    Long rightId = messageHandler.queryLeftUserId(this.userId);
+                    if (rightId == null || rightId == 0) {
+                        sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE,this.userId));
+                        return;
+                    }
+                    //send end message
+                    messageHandler.getSocket(rightId).sendMessage(message);
                     break;
                 case MES_UNKNOWN:
                     break;
             }
         } catch (Exception e) {
             try {
-                session.getBasicRemote().sendObject(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE));
+                session.getBasicRemote().sendObject(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE,this.userId));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -144,7 +154,9 @@ public class WebsocketServer {
     }
 
     public void sendMessage(Object message) throws IOException {
-        this.session.getBasicRemote().sendText(messageHandler.encodeMessage(message));
+        String data = messageHandler.encodeMessage(message);
+        System.out.println("" + data);
+        this.session.getBasicRemote().sendText(data);
     }
 
    /* public void sendMessageByUserId(String userId, String message) throws IOException {
