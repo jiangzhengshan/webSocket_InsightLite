@@ -374,6 +374,10 @@ function finalResult(finalPassedLevel) {
         $(".device_visual_size").append(h3)
         $(".vaOD").children(0).text("vaOD:"+localStorage.vaOD)
         $(".vaOS").children(0).text("vaOS:"+localStorage.vaOS)
+        // 结束之后向后台发送消息告知已结束
+        websocket.send(JSON.stringify({
+            "messageId": 37
+        }));
     }
 }
 

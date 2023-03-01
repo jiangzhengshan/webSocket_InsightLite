@@ -109,6 +109,9 @@ public class WebsocketServer {
                     //response right
                     sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK));
                     break;
+                case MSG_TESTDOWN:
+                    System.out.println("检查结束");
+                    break;
                 case MES_UNKNOWN:
                     break;
             }
