@@ -105,13 +105,13 @@ function webScoketInit() {
         // 收到方向消息
         if (res.messageId == 35) {
             var direction = res.body
-            if (direction = 65538) {
+            if (direction == 65538) {
                 direction = 1
-            } else if (direction = 65541) {
+            } else if (direction == 65541) {
                 direction = 2
-            } else if (direction = 65539) {
+            } else if (direction == 65539) {
                 direction = 3
-            } else {
+            } else if (direction == 65540) {
                 direction = 4
             }
             userDirection = direction
@@ -204,7 +204,6 @@ function drawDiagram() {
 }
 
 function changeDotPos() {
-
     for (var i = 0; i< $(".draw_dot").length; i++)
         if (i == swipeCount) {
             $(".draw_dot")[i].style.opacity = 1
