@@ -114,13 +114,13 @@ public class WebsocketServer {
                     sendMessage(messageHandler.createCommonMessage(MessageType.MSG_RESPONSE_OK,this.userId));
                     break;
                 case MSG_TESTDOWN:
-                    Long rightId = messageHandler.queryLeftUserId(this.userId);
+                    Long rightId = messageHandler.queryRightUserId(this.userId);
                     if (rightId == null || rightId == 0) {
                         sendMessage(messageHandler.createCommonMessage(MessageType.MSG_ERROR_RESPONSE,this.userId));
                         return;
                     }
                     //send end message
-                    messageHandler.getSocket(rightId).sendMessage(message);
+                    messageHandler.getSocket(rightId).sendMessage(messageHandler.createCommonMessage(MessageType.MSG_TESTDOWN,this.userId));
                     break;
                 case MES_UNKNOWN:
                     break;
