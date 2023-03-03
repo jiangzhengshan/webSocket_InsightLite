@@ -1,6 +1,5 @@
 package com.eyeque.controller;
 
-import com.eyeque.Constant;
 import com.eyeque.model.Conversation;
 import com.eyeque.model.Message;
 import com.eyeque.model.MessageType;
@@ -155,7 +154,7 @@ public class WebsocketServer {
 
     public void sendMessage(Object message) throws IOException {
         String data = messageHandler.encodeMessage(message);
-        System.out.println("" + data);
+        //System.out.println("" + data);
         this.session.getBasicRemote().sendText(data);
     }
 
