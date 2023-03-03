@@ -5,6 +5,7 @@ build/
 out/
 /src/test/
 .idea
+/target
 *.iml
 *.ipr
 *.iws
